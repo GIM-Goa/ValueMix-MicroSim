@@ -1,21 +1,21 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zeno EV Value-Pack Simulator</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Zeno EV Value-Pack Simulator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
     body {font-family: ui-rounded, system-ui, sans-serif;background: radial-gradient(circle at top left, #e0f2fe, #f1f5f9);}
     .draggable{cursor:grab;transition:transform .25s}.draggable:hover{transform:scale(1.03)}.dragging{opacity:.5}.package-tile{cursor:pointer}
     @media (max-width:640px){#dropZone{position:fixed;left:0;right:0;bottom:0;border-radius:1rem 1rem 0 0;z-index:30}body{padding-bottom:180px}#submitBtn{margin-bottom:180px}}
   </style>
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50">
-  <div id="app" class="flex-1"></div>
-  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded hidden"></div>
-
+<div class="flex-1" id="app"></div>
+<div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black text-white px-4 py-2 rounded hidden" id="toast"></div>
 <script>
 /* === DATA === */
 
@@ -38,7 +38,6 @@ const SERVICES=[{id:1,label:'Unlimited Swap',up:0,mo:2500},{id:2,label:'Home‑C
 
 /* === STATE === */
 let player={name:'',roll:'',persona:null,base:null,services:[]};
-let draggedEl = null;
 const attempts=JSON.parse(localStorage.getItem('zenoAttempts')||'[]');
 
 /* === UTIL === */
@@ -100,7 +99,88 @@ function leaderBoard(){const rows=[...attempts].sort((a,b)=>b.total-a.total).map
 function clearBoard(){if(confirm('Delete all leaderboard data?')){localStorage.removeItem('zenoAttempts');attempts.length=0;leaderBoard();}}
 /* === PLAY AGAIN === */
 function playAgain(){location.hash='';setTimeout(()=>window.location.reload(),50);}
+
+let draggedEl = null;
+let selectedEl = null;
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+const useTapMode = isTouchDevice && isMobile;
+
+function addDragEvents(zoneSelector, expected) {
+  const zone = document.querySelector(zoneSelector);
+
+  document.querySelectorAll('.draggable').forEach(el => {
+    if (useTapMode) {
+      el.addEventListener('click', () => {
+        selectedEl = el;
+        toast("Now tap the drop zone to place.");
+      });
+    } else {
+      el.addEventListener('dragstart', e => {
+        draggedEl = el;
+        e.dataTransfer.setData('text/plain', el.outerHTML);
+        e.dataTransfer.setData('data-type', el.dataset.type);
+        e.dataTransfer.setData('data-id', el.dataset.id || el.dataset.code);
+      });
+    }
+  });
+
+  zone.addEventListener('dragover', e => e.preventDefault());
+
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const type = useTapMode ? selectedEl?.dataset.type : e.dataTransfer.getData('data-type');
+
+    if (type !== expected) {
+      toast('Drop the correct item here');
+      return;
+    }
+
+    if (type === 'base' && zone.children.length) {
+      toast('Only one base');
+      return;
+    }
+
+    if (type === 'service' && zone.children.length >= 5) {
+      toast('Max five services');
+      return;
+    }
+
+    if (useTapMode && selectedEl) {
+      zone.appendChild(cloneTile(selectedEl));
+      selectedEl = null;
+    } else {
+      const frag = document.createRange().createContextualFragment(e.dataTransfer.getData('text/plain'));
+      zone.appendChild(cloneTile(frag.firstElementChild));
+    }
+
+    updateMeter();
+  });
+
+  if (useTapMode) {
+    zone.addEventListener('click', () => {
+      if (!selectedEl) return;
+      const type = selectedEl.dataset.type;
+      if (type !== expected) {
+        toast('Drop the correct item here');
+        return;
+      }
+      if (type === 'base' && zone.children.length) {
+        toast('Only one base');
+        return;
+      }
+      if (type === 'service' && zone.children.length >= 5) {
+        toast('Max five services');
+        return;
+      }
+      zone.appendChild(cloneTile(selectedEl));
+      selectedEl = null;
+      updateMeter();
+    });
+  }
+}
 </script>
 </body>
 </html>
+
 
