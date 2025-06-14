@@ -179,8 +179,24 @@ function addDragEvents(zoneSelector, expected) {
     });
   }
 }
+
+function cloneTile(el){
+  const d = el.cloneNode(true);
+  d.classList.remove('draggable');
+  d.classList.add('package-tile');
+  // Explicitly copy all data attributes
+  for (let attr of el.attributes) {
+    if (attr.name.startsWith('data-')) {
+      d.setAttribute(attr.name, attr.value);
+    }
+  }
+  d.addEventListener('click', () => {
+    d.remove();
+    updateMeter();
+  });
+  return d;
+}
 </script>
 </body>
 </html>
-
 
