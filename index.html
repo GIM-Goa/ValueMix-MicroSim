@@ -38,6 +38,7 @@ const SERVICES=[{id:1,label:'Unlimited Swap',up:0,mo:2500},{id:2,label:'Home‑C
 
 /* === STATE === */
 let player={name:'',roll:'',persona:null,base:null,services:[]};
+let draggedEl = null;
 const attempts=JSON.parse(localStorage.getItem('zenoAttempts')||'[]');
 
 /* === UTIL === */
@@ -102,3 +103,4 @@ function playAgain(){location.hash='';setTimeout(()=>window.location.reload(),50
 </script>
 </body>
 </html>
+
