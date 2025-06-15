@@ -53,7 +53,8 @@ window.addEventListener('hashchange',router);document.addEventListener('DOMConte
 function router(){switch(location.hash){case'#persona':return persona();case'#builder_model':return builderModel();case'#builder':return builder();case'#score':return scoreBoard();case'#leaderboard':return leaderBoard();default:return login();}}
 
 /* === VIEWS === */
-function login(){$('#app').innerHTML=`<div class="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow"><h1 class="text-xl font-semibold mb-4 text-sky-700 text-center">MicroSim: Zeno's Value Propositions</h1>
+function login(){$('#app').innerHTML=`<div class="max-w-md mx-auto mt-16 bg-white p-6 rounded shadow">
+<h1 class="text-xl font-semibold mb-4 text-sky-700 text-center">MicroSim: Zeno's Value Propositions (Explore it on laptop: Recommended!)</h1>
 
 <h2 class="text-xl font-semibold mb-4 text-orange-600 text-center">
   <a
@@ -66,24 +67,23 @@ function login(){$('#app').innerHTML=`<div class="max-w-md mx-auto mt-16 bg-whit
         <img src="https://i.ibb.co/PvDJJgsZ/Zeno.png" alt="Zeno Bike" border="0" width="350"/>
         </div>
 <h3 class="text-xl font-semibold mb-4 text-sky-700 text-center">
-Fill Your Details &amp; Start Designing (Experienced - best - on laptops)
-</h3>
+Fill Your Details &amp; Start Designing</h3>
 
 Name<input id="inpName" class="border w-full px-2 py-1 rounded"/></label><label class="block mb-4 text-sm">Roll / Group No.<input id="inpRoll" class="border w-full px-2 py-1 rounded"/></label><button class="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded w-full" onclick="startPersona()">Start</button></div>`;}
 
 function startPersona(){const nm=$('#inpName').value.trim(),rl=$('#inpRoll').value.trim();if(!nm||!rl){toast('Enter name & roll');return;}player={name:nm,roll:rl,persona:null,base:null,services:[]};location.hash='#persona';}
 function persona(){$('#app').innerHTML=`<div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white font-bold py-2 px-4 text-center">
-  Read "Info" and Select a Persona to Proceed
+  Read the "Infos" and Select a Persona to Proceed
 </div>
 
 <div class="max-w-3xl mx-auto mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 px-4">${PERSONAS.map(p=>`<div class="bg-white p-4 rounded shadow hover:ring hover:ring-sky-400 flex justify-between items-center cursor-pointer" onclick="selectPersona('${p.id}')"><span>${p.name}</span><span class="text-xs text-indigo-700 underline" onclick="event.stopPropagation();showPersona('${p.id}')">info</span></div>`).join('')}</div>`;}
 function showPersona(id){const p=PERSONAS.find(x=>x.id===id);alert(`${p.name}\n\n${PERSONA_INFO[id]}\n\nBudget ≤ ${cur(p.capUp)} up‑front & ≤ ${cur(p.capMo)} / month`);}
 function selectPersona(id){player.persona=PERSONAS.find(p=>p.id===id);location.hash='#builder_model';}
 
-function builderModel(){const tiles=BASES.map(b=>tile(b.label,cur(b.up),`data-type='base' data-code='${b.code}'`)).join('');$('#app').innerHTML=`<div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white font-bold py-2 px-4 text-center">Design Step 1: Drag&Drop or Tap&Touch (in mobiles) to Drop Area & Click Next</div><div class="max-w-xl mx-auto mt-6 px-4 space-y-4">${tiles}<h2 class="mt-6 font-semibold">Drop Area</h2><div id="modelDrop" class="min-h-[120px] bg-white/70 border-dashed border-2 rounded p-3 flex flex-wrap gap-2 shadow-md backdrop-blur"></div><button id="nextBtn" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded disabled:opacity-40" disabled onclick="goToServices()">Next</button></div>`;addDragEvents('#modelDrop','base');}
+function builderModel(){const tiles=BASES.map(b=>tile(b.label,cur(b.up),`data-type='base' data-code='${b.code}'`)).join('');$('#app').innerHTML=`<div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white font-bold py-2 px-4 text-center">Select a Base Model Design Step 1: Drag&Drop (in laptops) or Tap&Touch (in mobiles) to Drop Area & Click Next</div><div class="max-w-xl mx-auto mt-6 px-4 space-y-4">${tiles}<h2 class="mt-6 font-semibold">Drop Area</h2><div id="modelDrop" class="min-h-[120px] bg-white/70 border-dashed border-2 rounded p-3 flex flex-wrap gap-2 shadow-md backdrop-blur"></div><button id="nextBtn" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded disabled:opacity-40" disabled onclick="goToServices()">Next</button></div>`;addDragEvents('#modelDrop','base');}
 
 function goToServices(){player.base=BASES.find(b=>b.code==$('#modelDrop').firstElementChild.dataset.code);location.hash='#builder';}
-function builder(){const sTiles=SERVICES.map(s=>tile(s.label,`${s.up?`↑${cur(s.up)}`:''}${s.mo?` / mo ${s.mo}`:''}`,`data-type='service' data-id='${s.id}'`)).join('');$('#app').innerHTML=`<div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white font-bold py-2 px-4 text-center">Design Step 2: Drag&Drop or Tap&Touch (in mobiles) up to 5 Services to Drop Area & Submit</div><div class="max-w-5xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 px-4"><div class="md:col-span-2 h-[60vh] overflow-y-auto pr-2 grid sm:grid-cols-2 gap-2">${sTiles}</div><div><h2 class="font-semibold mb-2">Your Package (click tile to remove)</h2><div id="dropZone" class="min-h-[240px] bg-white/70 border-dashed border-2 rounded p-3 flex flex-wrap gap-2 shadow-md backdrop-blur"></div><div id="meter" class="mt-2 text-sm"></div><button id="submitBtn" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded disabled:opacity-40" disabled onclick="submitPackage()">Submit</button></div></div>`;addDragEvents('#dropZone','service');updateMeter();}
+function builder(){const sTiles=SERVICES.map(s=>tile(s.label,`${s.up?`↑${cur(s.up)}`:''}${s.mo?` / mo ${s.mo}`:''}`,`data-type='service' data-id='${s.id}'`)).join('');$('#app').innerHTML=`<div class="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 text-white font-bold py-2 px-4 text-center">Select suitable addons Design Step 2: Drag&Drop or Tap&touch up to 5 Services to Drop Area & Submit</div><div class="max-w-5xl mx-auto mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 px-4"><div class="md:col-span-2 h-[60vh] overflow-y-auto pr-2 grid sm:grid-cols-2 gap-2">${sTiles}</div><div><h2 class="font-semibold mb-2">Your Package (click tile to remove)</h2><div id="dropZone" class="min-h-[240px] bg-white/70 border-dashed border-2 rounded p-3 flex flex-wrap gap-2 shadow-md backdrop-blur"></div><div id="meter" class="mt-2 text-sm"></div><button id="submitBtn" class="mt-4 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded disabled:opacity-40" disabled onclick="submitPackage()">Submit</button></div></div>`;addDragEvents('#dropZone','service');updateMeter();}
 
 /* === DRAG HELPERS === */
 function tile(txt,price,attr){return`<div class="draggable bg-indigo-100 text-indigo-800 p-3 text-sm rounded shadow" draggable="true" ${attr}>${txt}<br><span class="text-xs float-right">${price}</span></div>`;}
